@@ -200,8 +200,9 @@ static size_t get_file_content_size_in_bytes(std::string &file_content) {
 int main() {
     const char *filename = "test.txt";
     std::string file_content = get_file_contents(filename);
-
     size_t position = get_file_content_size_in_bytes(file_content);
+    size_t initial_size = position;
+
     size_t encrypted_text_size_in_byte = position % 8 == 0 ? position : position + (8 - (position % 8));
     uint8_t* file_content_in_bytes = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(file_content.c_str()));
     uint8_t *encrypted_text = new uint8_t[encrypted_text_size_in_byte];
@@ -210,18 +211,22 @@ int main() {
     uint8_t *key = generate_256b_random_key();
 
     std::cout << "Open message:\n";
-    print_array(file_content_in_bytes, position);
     std::cout << file_content_in_bytes << "\n\n";
 
     position = GOST_28147(encrypted_text, 'E', key, file_content_in_bytes, position);
     std::cout << "Encrypted message:\n";
-    print_array(encrypted_text, position);
     std::cout << encrypted_text << "\n\n";
 
     std::cout << "Decrypted message:\n";
     position = GOST_28147(decrypted_text, 'D', key, encrypted_text, position);
-    print_array(decrypted_text, position);
     std::cout << decrypted_text << "\n\n";
+
+    std::ofstream fout;
+    fout.open("file.txt", std::ios::binary | std::ios::out);
+
+    fout.write((char*)decrypted_text, initial_size);
+
+    fout.close();
 
     delete[] key;
     delete[] encrypted_text;
