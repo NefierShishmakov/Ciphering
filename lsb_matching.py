@@ -94,7 +94,10 @@ def main() -> None:
     # а здесь просто происходит извлечение сообщения основываясь на рандомных позициях пикселей
     extracted_message: str = extract_message_from_img(output_img_path, random_pixels_positions)
 
-    print(f"The extracted message is {extracted_message}")
+    if extracted_message == message:
+        print(f"The extracted message is {extracted_message}")
+    else:
+        print(f"The extracted message: {extracted_message} and message: {message} are not equal")
 
 
 if __name__ == "__main__":
