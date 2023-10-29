@@ -4,7 +4,7 @@ from PIL import Image
 
 
 def convert_message_to_binary(message: str) -> str:
-    return "".join(format(ord(char), "08b") for char in message)
+    return "".join(format(byte, "08b") for byte in message.encode("utf-8"))
 
 
 def get_the_list_of_random_pixels_positions(img_width: int, img_height: int, binary_message_length: int) -> list[
@@ -60,7 +60,6 @@ def main() -> None:
     message: str = input("Enter message: ")
     input_img_path: str = input("Enter input image without extension: ") + ".png"
     output_img_path: str = input("Enter output image without extension: ") + ".png"
-
     binary_message: str = convert_message_to_binary(message)
     binary_message_length: int = len(binary_message)
     img: Image = Image.open(input_img_path)
@@ -83,3 +82,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
