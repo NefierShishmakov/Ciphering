@@ -19,8 +19,9 @@ def get_the_list_of_random_pixels_positions(img_width: int, img_height: int, bin
     return list(random_pixels_positions)
 
 
-def hide_message_in_img(img: Image, binary_message: str, random_pixels_positions: list[tuple[int, int, int]],
-                        output_img_path: str) -> None:
+def hide_message_in_img_with_lsb_matching(img: Image, binary_message: str,
+                                          random_pixels_positions: list[tuple[int, int, int]],
+                                          output_img_path: str) -> None:
     sign: list[int] = [-1, 1]
     for bit, random_pixel_position in zip(binary_message, random_pixels_positions):
         position = random_pixel_position[0:2]
@@ -36,6 +37,18 @@ def hide_message_in_img(img: Image, binary_message: str, random_pixels_positions
         elif m != lsb and pixel_rgb[byte_idx] == 255:
             s = -1
         pixel_rgb[byte_idx] += s
+        img.putpixel(position, tuple(pixel_rgb))
+    img.save(output_img_path)
+
+
+def hide_message_in_img_with_lsb_replacement(img: Image, binary_message: str,
+                                             random_pixels_positions: list[tuple[int, int, int]],
+                                             output_img_path: str) -> None:
+    for bit, random_pixel_position in zip(binary_message, random_pixels_positions):
+        position = random_pixel_position[0:2]
+        pixel_rgb: list[int] = list(img.getpixel(position))
+        byte_idx: int = random_pixel_position[2]
+        pixel_rgb[byte_idx] = pixel_rgb[byte_idx] & 254 | int(bit)
         img.putpixel(position, tuple(pixel_rgb))
     img.save(output_img_path)
 
@@ -60,6 +73,7 @@ def main() -> None:
     message: str = input("Enter message: ")
     input_img_path: str = input("Enter input image without extension: ") + ".png"
     output_img_path: str = input("Enter output image without extension: ") + ".png"
+    method: str = input("Which method you want to use: \"Replacement\" or \"Matching\"?\nEnter \"R\" or \"M\": ")
     binary_message: str = convert_message_to_binary(message)
     binary_message_length: int = len(binary_message)
     img: Image = Image.open(input_img_path)
@@ -73,7 +87,10 @@ def main() -> None:
     random_pixels_positions: list[tuple[int, int, int]] = get_the_list_of_random_pixels_positions(img_width, img_height,
                                                                                                   binary_message_length)
     # здесь мы сохраняем наше сообщение в другой картинке
-    hide_message_in_img(img, binary_message, random_pixels_positions, output_img_path)
+    if method == "M":
+        hide_message_in_img_with_lsb_matching(img, binary_message, random_pixels_positions, output_img_path)
+    elif method == "R":
+        hide_message_in_img_with_lsb_replacement(img, binary_message, random_pixels_positions, output_img_path)
     # а здесь просто происходит извлечение сообщения основываясь на рандомных позициях пикселей
     extracted_message: str = extract_message_from_img(output_img_path, random_pixels_positions)
 
